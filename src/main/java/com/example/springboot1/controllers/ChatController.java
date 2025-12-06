@@ -52,7 +52,7 @@ public class ChatController {
                 linkTo(methodOn(ChatController.class).getChatByOrderId(orderId)).withSelfRel());
     }
 
-    @PostMapping("insertChat")
+    @PostMapping("/insertChat")
     public EntityModel<Chat> insertChat(@RequestBody Chat chat) {
         Chat saved = chatRepo.save(chat);
         return EntityModel.of(saved,

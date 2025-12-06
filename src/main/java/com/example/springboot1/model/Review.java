@@ -19,6 +19,7 @@ public class Review {
     private int id;
     private int rating;
     private String reviewText;
+    @Column(columnDefinition = "DATE")
     private LocalDate dateCreated;
     @ManyToOne
     private BasicUser commentOwner;
@@ -32,9 +33,15 @@ public class Review {
         this.commentOwner = commentOwner;
         this.chat = chat;
     }
+    public Review(int rating, String reviewText, BasicUser commentOwner, BasicUser feedbackUser) {
+        this.rating = rating;
+        this.reviewText = reviewText;
+        this.commentOwner = commentOwner;
+        this.feedbackUser = feedbackUser;
+    }
     @Override
     public String toString() {
-        return reviewText;
+        return commentOwner.getName() + " " + commentOwner.getSurname() + ": " + reviewText;
     }
 
 }

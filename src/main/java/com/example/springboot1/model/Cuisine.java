@@ -1,5 +1,6 @@
 package com.example.springboot1.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,11 +21,11 @@ public class Cuisine implements Serializable {
     private Double price;
     private boolean spicy;
     private boolean vegan;
-
+@JsonIgnore
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
-
+@JsonIgnore
     @ManyToMany(mappedBy = "cuisineList")
     private List<FoodOrder> foodOrders;
 

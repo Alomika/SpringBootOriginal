@@ -36,6 +36,60 @@ public class Chat {
         this.dateCreated = LocalDate.now();
         this.messages = new ArrayList<>();
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getChatText() {
+        return chatText;
+    }
+
+    public void setChatText(String chatText) {
+        this.chatText = chatText;
+    }
+
+    public LocalDate getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(LocalDate dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public FoodOrder getFoodOrder() {
+        return foodOrder;
+    }
+
+    public void setFoodOrder(FoodOrder foodOrder) {
+        this.foodOrder = foodOrder;
+    }
+
+    public List<Review> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<Review> messages) {
+        this.messages = messages;
+    }
+
+    public Chat(String name, LocalDate dateCreated) {
+        this.name = name;
+        this.dateCreated = dateCreated;
+    }
+
     @Override
     public String toString() {
         String orderName = (foodOrder != null) ? foodOrder.getName() : "No order";

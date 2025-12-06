@@ -1,6 +1,10 @@
 package com.example.springboot1.controllers;
 
+import com.example.springboot1.model.BasicUser;
+import com.example.springboot1.model.FoodOrder;
 import com.example.springboot1.model.Review;
+import com.example.springboot1.repositories.BasicUserRepo;
+import com.example.springboot1.repositories.FoodOrderRepo;
 import com.example.springboot1.repositories.ReviewRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
@@ -9,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +24,12 @@ public class ReviewController {
 
     @Autowired
     private ReviewRepo reviewRepo;
+
+    @Autowired
+    private BasicUserRepo basicUserRepo;
+
+    @Autowired
+    private FoodOrderRepo foodOrderRepo;
 
     @GetMapping("allReviews")
     public CollectionModel<EntityModel<Review>> getAll() {
@@ -72,6 +83,36 @@ public class ReviewController {
 
         return CollectionModel.of(reviews,
                 linkTo(methodOn(ReviewController.class).getReviewsByFeedbackUser(userId)).withSelfRel());
+    }
+
+    // NEW: Create review for a specific order
+    @PostMapping("/order/{orderId}/review")
+    public EntityModel<Review> createReviewForOrder(@PathVariable Integer orderId, @RequestBody ReviewRequest request) {
+        // Validate order exists and is completed
+        FoodOrder order = foodOrderRepo.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        // Get comment owner (the person writing the review)
+        BasicUser commentOwner = basicUserRepo.findById(request.getCommentOwnerId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment owner not found"));
+
+        // Get feedback user (the person being reviewed)
+        BasicUser feedbackUser = basicUserRepo.findById(request.getFeedbackUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Feedback user not found"));
+
+        // Create and save review
+        Review review = new Review();
+        review.setRating(request.getRating());
+        review.setReviewText(request.getReviewText());
+        review.setCommentOwner(commentOwner);
+        review.setFeedbackUser(feedbackUser);
+        review.setDateCreated(LocalDate.now());
+
+        Review saved = reviewRepo.save(review);
+
+        return EntityModel.of(saved,
+                linkTo(methodOn(ReviewController.class).getReviewById(saved.getId())).withSelfRel(),
+                linkTo(methodOn(ReviewController.class).getAll()).withRel("allReviews"));
     }
 
     @PostMapping("insertReview")

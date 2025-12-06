@@ -32,10 +32,13 @@ public class FoodOrder {
             inverseJoinColumns = @JoinColumn(name = "cuisine_id")
     )
     private List<Cuisine> cuisineList;
+    @JsonIgnore
     @OneToOne
     private Chat chat;
+    @JsonIgnore
     @ManyToOne
     private Driver driver;
+    @JsonIgnore
     @ManyToOne
     private Restaurant restaurant;
     @Enumerated(EnumType.STRING)
