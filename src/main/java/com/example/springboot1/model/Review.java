@@ -1,5 +1,6 @@
 package com.example.springboot1.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +24,7 @@ public class Review {
     private LocalDate dateCreated;
     @ManyToOne
     private BasicUser commentOwner;
+
     @ManyToOne
     private BasicUser feedbackUser;
     @ManyToOne

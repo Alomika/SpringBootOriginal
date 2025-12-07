@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -41,12 +40,11 @@ public class UserController {
                 .collect(Collectors.toList());
         return CollectionModel.of(users, linkTo(methodOn(UserController.class).getAllUsers()).withSelfRel());
     }
+
     @PostMapping(value = "/validateUser", consumes = "application/json")
     public @ResponseBody User getUserByCredentials(@RequestBody LoginRequest request) {
-        System.out.println("Login: " + request.getLogin() + ", Password: " + request.getPassword());
         return userRepository.getUserByLoginAndPassword(request.getLogin(), request.getPassword());
     }
-
 
     @GetMapping("/user/{id}")
     public EntityModel<User> getUserById(@PathVariable int id) {
@@ -57,10 +55,14 @@ public class UserController {
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("allUsers"));
     }
 
-    @PostMapping("/insertUser") public EntityModel<User> createUser(@RequestBody User user) {
+    @PostMapping("/insertUser")
+    public EntityModel<User> createUser(@RequestBody User user) {
         userRepository.save(user);
         User saved = userRepository.getUserByLoginAndPassword(user.getLogin(), user.getPassword());
-        return EntityModel.of(saved, linkTo(methodOn(UserController.class).getUserById(saved.getId())).withSelfRel(), linkTo(methodOn(UserController.class).getAllUsers()).withRel("allUsers")); }
+        return EntityModel.of(saved,
+                linkTo(methodOn(UserController.class).getUserById(saved.getId())).withSelfRel(),
+                linkTo(methodOn(UserController.class).getAllUsers()).withRel("allUsers"));
+    }
 
     @PutMapping("/updateUserById/{id}")
     public EntityModel<User> updateUserById(@RequestBody String info, @PathVariable int id) {
@@ -83,11 +85,10 @@ public class UserController {
     public EntityModel<String> deleteUser(@PathVariable int id) {
         userRepository.deleteById(id);
         String message = userRepository.existsById(id) ? "fail on delete" : "deleted successfully";
-        return EntityModel.of(message,
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("allUsers"));
+        return EntityModel.of(message, linkTo(methodOn(UserController.class).getAllUsers()).withRel("allUsers"));
     }
 
-    @GetMapping("allCustomers")
+    @GetMapping("/allCustomers")
     public CollectionModel<EntityModel<BasicUser>> getAllCustomers() {
         List<EntityModel<BasicUser>> users = basicUserRepository.findAll().stream()
                 .map(user -> EntityModel.of(user,
@@ -100,20 +101,17 @@ public class UserController {
     public EntityModel<BasicUser> getBasicUserById(@PathVariable int id) {
         BasicUser user = basicUserRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BasicUser not found"));
-        return EntityModel.of(user,
-                linkTo(methodOn(UserController.class).getBasicUserById(id)).withSelfRel());
+        return EntityModel.of(user, linkTo(methodOn(UserController.class).getBasicUserById(id)).withSelfRel());
     }
 
     @PostMapping("/insertBasic")
     public EntityModel<BasicUser> createBasicUser(@RequestBody BasicUser user) {
         basicUserRepository.save(user);
         BasicUser saved = basicUserRepository.getBasicUserByLoginAndPassword(user.getLogin(), user.getPassword());
-        return EntityModel.of(saved,
-                linkTo(methodOn(UserController.class).getBasicUserById(saved.getId())).withSelfRel());
+        return EntityModel.of(saved, linkTo(methodOn(UserController.class).getBasicUserById(saved.getId())).withSelfRel());
     }
 
-
-    @GetMapping("allDrivers")
+    @GetMapping("/allDrivers")
     public CollectionModel<EntityModel<Driver>> getAllDrivers() {
         List<EntityModel<Driver>> drivers = driverRepository.findAll().stream()
                 .map(driver -> EntityModel.of(driver,
@@ -126,37 +124,34 @@ public class UserController {
     public EntityModel<Driver> getDriverById(@PathVariable int id) {
         Driver driver = driverRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Driver not found"));
-        return EntityModel.of(driver,
-                linkTo(methodOn(UserController.class).getDriverById(id)).withSelfRel());
+        return EntityModel.of(driver, linkTo(methodOn(UserController.class).getDriverById(id)).withSelfRel());
     }
 
     @PostMapping("/insertDriver")
     public EntityModel<Driver> createDriver(@RequestBody Driver driver) {
         driverRepository.save(driver);
         Driver saved = driverRepository.getDriverByLoginAndPassword(driver.getLogin(), driver.getPassword());
-        return EntityModel.of(saved,
-                linkTo(methodOn(UserController.class).getDriverById(saved.getId())).withSelfRel());
+        return EntityModel.of(saved, linkTo(methodOn(UserController.class).getDriverById(saved.getId())).withSelfRel());
     }
 
-    @GetMapping(value = "allRestaurants")
-    public @ResponseBody Iterable<Restaurant> getAllRestaurants() {
-
+    @GetMapping("/allRestaurants")
+    public Iterable<Restaurant> getAllRestaurants() {
         return restaurantRepository.findAll();
     }
+
     @GetMapping("/restaurant/{id}/cuisines")
     public List<Cuisine> getCuisinesByRestaurantId(@PathVariable int id) {
         List<Cuisine> cuisines = cuisineRepo.findCuisineByRestaurantId(id);
         if (cuisines.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No cuisines found for restaurant id " + id);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No cuisines found for restaurant id " + id);
         }
         return cuisines;
     }
+
     @GetMapping("/restaurant/{id}")
     public EntityModel<Restaurant> getRestaurantById(@PathVariable int id) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found"));
-        return EntityModel.of(restaurant,
-                linkTo(methodOn(UserController.class).getRestaurantById(id)).withSelfRel());
+        return EntityModel.of(restaurant, linkTo(methodOn(UserController.class).getRestaurantById(id)).withSelfRel());
     }
 }

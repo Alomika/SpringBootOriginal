@@ -4,11 +4,14 @@ import com.example.springboot1.OrderStatusUpdateRequest;
 import com.example.springboot1.model.*;
 import com.example.springboot1.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class FoodOrderController {
@@ -26,6 +29,10 @@ private CuisineRepo cuisineRepo;
     private ChatRepo chatRepo;
     @Autowired
     private FoodOrderRepo foodOrderRepository;
+    @Autowired
+    private ReviewRepo reviewRepo;
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping("/{driverId}/orders")
     public List<FoodOrder> getOrdersByDriver(@PathVariable Integer driverId) {
@@ -53,6 +60,9 @@ private CuisineRepo cuisineRepo;
 
         return cuisines;
     }
+
+
+
 
     @GetMapping("/buyer/{buyerId}")
     public List<FoodOrder> getOrdersByBuyer(@PathVariable Integer buyerId) {
@@ -89,7 +99,12 @@ private CuisineRepo cuisineRepo;
         order.setOrderStatus(OrderStatus.PENDING); // set default status
         order.setDateCreated(LocalDate.now());
         order.setDateUpdated(LocalDate.now());
-
+        Chat chat = new Chat();
+        chat.setId(order.getId());
+        chat.setName("Chat for " + order.getName());
+        chat.setDateCreated(LocalDate.now());
+        chatRepo.save(chat);
+        order.setChat(chat);
         FoodOrder saved = foodOrderRepo.save(order);
         System.out.println("Saved order ID: " + saved.getId());
         return saved;
@@ -102,6 +117,11 @@ private CuisineRepo cuisineRepo;
         // Update status if provided
         if (request.getStatus() != null) {
             order.setOrderStatus(request.getStatus());
+        }
+        // Update chat if provided
+        if (request.getChat() != null) {
+            Chat chat = chatRepo.findById(request.getChat().getId()).orElse(null);
+            order.setChat(chat);
         }
 
         // Update driver if provided
@@ -120,35 +140,11 @@ private CuisineRepo cuisineRepo;
         if (request.getPrice() != null) {
             order.setPrice(request.getPrice());
         }
-
         // Always update the dateUpdated
         order.setDateUpdated(LocalDate.now());
 
         return foodOrderRepo.save(order);
     }
-    @PostMapping("/order/{orderId}/chat")
-    public FoodOrder createChatForOrder(@PathVariable Integer orderId, @RequestBody ChatRequest request) {
-        FoodOrder order = foodOrderRepo.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        // If chat already exists, return order as-is
-        if (order.getChat() != null) {
-            return order;
-        }
-
-        // Create new chat
-        Chat chat = new Chat();
-        chat.setName(request.getName());
-        chat.setDateCreated(LocalDate.now());
-
-        Chat savedChat = chatRepo.save(chat);
-
-        // Update order to reference chat
-        order.setChat(savedChat);
-        order.setDateUpdated(LocalDate.now());
-        return foodOrderRepo.save(order);
-    }
-
 
 
 
@@ -166,7 +162,17 @@ private CuisineRepo cuisineRepo;
 
         return foodOrderRepo.save(order);
     }
+    @PutMapping("/order/{id}/chat")
+    public FoodOrder updateOrderChat(@PathVariable Integer id, @RequestBody OrderChatUpdateRequest request) {
 
+        FoodOrder order = foodOrderRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setChat(request.getChat());
+        order.setDateUpdated(LocalDate.now());
+
+        return foodOrderRepo.save(order);
+    }
 
     // Optional: Delete order
     @DeleteMapping("deleteOrder/{id}")

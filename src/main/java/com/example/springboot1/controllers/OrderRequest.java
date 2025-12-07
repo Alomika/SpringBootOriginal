@@ -9,6 +9,15 @@ public class OrderRequest {
     private List<Integer> cuisineIds;
     private String name;
     private Double price;
+    private Integer chatId;
+
+    public Integer getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(Integer chatId) {
+        this.chatId = chatId;
+    }
 
     public Integer getBuyerId() {
         return buyerId;

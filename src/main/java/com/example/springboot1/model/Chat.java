@@ -24,6 +24,7 @@ public class Chat {
     private String name;
     private String chatText;
     private LocalDate dateCreated;
+    @JsonIgnore
     @OneToOne(mappedBy = "chat", cascade = CascadeType.ALL)
     private FoodOrder foodOrder;
     @JsonIgnore

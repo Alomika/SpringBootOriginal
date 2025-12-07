@@ -54,7 +54,7 @@ public class ReviewController {
 
     @GetMapping("/chat/{chatId}")
     public CollectionModel<EntityModel<Review>> getMessagesByChatId(@PathVariable int chatId) {
-        List<EntityModel<Review>> reviews = reviewRepo.findByChat_Id(chatId).stream()
+        List<EntityModel<Review>> reviews = reviewRepo.findByChatId(chatId).stream()
                 .map(review -> EntityModel.of(review,
                         linkTo(methodOn(ReviewController.class).getReviewById(review.getId())).withSelfRel()))
                 .collect(Collectors.toList());
@@ -65,7 +65,7 @@ public class ReviewController {
 
     @GetMapping("/user/{userId}/comments")
     public CollectionModel<EntityModel<Review>> getReviewsByCommentOwner(@PathVariable int userId) {
-        List<EntityModel<Review>> reviews = reviewRepo.findByCommentOwner_Id(userId).stream()
+        List<EntityModel<Review>> reviews = reviewRepo.findByCommentOwnerId(userId).stream()
                 .map(review -> EntityModel.of(review,
                         linkTo(methodOn(ReviewController.class).getReviewById(review.getId())).withSelfRel()))
                 .collect(Collectors.toList());
@@ -85,22 +85,14 @@ public class ReviewController {
                 linkTo(methodOn(ReviewController.class).getReviewsByFeedbackUser(userId)).withSelfRel());
     }
 
-    // NEW: Create review for a specific order
     @PostMapping("/order/{orderId}/review")
     public EntityModel<Review> createReviewForOrder(@PathVariable Integer orderId, @RequestBody ReviewRequest request) {
-        // Validate order exists and is completed
         FoodOrder order = foodOrderRepo.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-
-        // Get comment owner (the person writing the review)
         BasicUser commentOwner = basicUserRepo.findById(request.getCommentOwnerId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment owner not found"));
-
-        // Get feedback user (the person being reviewed)
         BasicUser feedbackUser = basicUserRepo.findById(request.getFeedbackUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Feedback user not found"));
-
-        // Create and save review
         Review review = new Review();
         review.setRating(request.getRating());
         review.setReviewText(request.getReviewText());

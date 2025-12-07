@@ -1,5 +1,6 @@
 package com.example.springboot1.controllers;
 
+import com.example.springboot1.model.Chat;
 import com.example.springboot1.model.OrderStatus;
 
 public class OrderUpdateRequest {
@@ -7,8 +8,16 @@ public class OrderUpdateRequest {
     private Integer driverId;
     private String name;
     private Double price;
+    private Chat chat;
 
-    // Constructors
+    public Chat getChat() {
+        return chat;
+    }
+
+    public void setChat(Chat chat) {
+        this.chat = chat;
+    }
+
     public OrderUpdateRequest() {
     }
 
@@ -51,4 +60,5 @@ public class OrderUpdateRequest {
     public void setPrice(Double price) {
         this.price = price;
     }
+
 }
